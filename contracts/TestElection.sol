@@ -2,14 +2,13 @@
 pragma solidity ^0.8.0;
 
 contract TestElection {
-    address public electionAdmin;
-
     enum PHASE {
         reg,
         voting,
         done
     }
 
+    address public electionAdmin;
     PHASE public currentElectionStage;
 
     constructor() {
@@ -22,18 +21,22 @@ contract TestElection {
         string name;
         uint voteCount;
         string party;
-        uint age;
+        string dob;
         string qualification;
+        string localGovernment;
     }
 
     struct Voter {
         bool hasVoted;
         uint vote;
         bool isRegistered;
+        string name;
+        string localGovernment;
     }
 
     mapping(uint => Candidate) public candidates;
     mapping(address => Voter) public registeredVoters;
+    address[] public voterAddresses; // New array to store voter addresses
     uint public candidatesCount;
 
     modifier onlyAdmin() {
@@ -54,8 +57,9 @@ contract TestElection {
     function addCandidate(
         string memory _name,
         string memory _party,
-        uint _age,
-        string memory _qualification
+        string memory _dob,
+        string memory _qualification,
+        string memory _localGovernment
     ) public onlyAdmin validState(PHASE.reg) {
         candidatesCount++;
         candidates[candidatesCount] = Candidate(
@@ -63,15 +67,25 @@ contract TestElection {
             _name,
             0,
             _party,
-            _age,
-            _qualification
+            _dob,
+            _qualification,
+            _localGovernment
         );
     }
 
     function registerVoter(
-        address voter
+        address voter,
+        string memory _localGovernment,
+        string memory _name
     ) public onlyAdmin validState(PHASE.reg) {
-        registeredVoters[voter].isRegistered = true;
+        registeredVoters[voter] = Voter({
+            hasVoted: false,
+            vote: 0,
+            isRegistered: true,
+            name: _name,
+            localGovernment: _localGovernment
+        });
+        voterAddresses.push(voter); // Store the voter's address
     }
 
     function castVote(uint _candidateId) public validState(PHASE.voting) {
@@ -107,5 +121,28 @@ contract TestElection {
 
         Candidate memory winner = candidates[winningCandidateId];
         return (winner.name, winner.voteCount, winner.party);
+    }
+
+    // New function to get all voter addresses
+    function getAllVoterAddresses() public view returns (address[] memory) {
+        return voterAddresses;
+    }
+
+    // New function to get voter details
+    function getVoterDetails(
+        address voter
+    )
+        public
+        view
+        returns (
+            bool hasVoted,
+            uint vote,
+            bool isRegistered,
+            string memory name,
+            string memory localGovernment
+        )
+    {
+        Voter memory v = registeredVoters[voter];
+        return (v.hasVoted, v.vote, v.isRegistered, v.name, v.localGovernment);
     }
 }

@@ -7,13 +7,16 @@ import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
 
 class GanacheConnectionProvider with ChangeNotifier {
-
   //my_IPv4_Address is 192.168.100.26
 
-  final String _rpcUrl= Platform.isAndroid ? 'http://10.0.2.2:7545' :    'http://192.168.100.26:7545';
-  final String _wsUrl = Platform.isAndroid ? 'http://10.0.2.2:7545' :   'ws://192.168.100.26:7545';
+  final String _rpcUrl = Platform.isAndroid
+      ? 'http://10.0.2.2:7545'
+      : 'http://192.168.100.26:7545';
+  final String _wsUrl =
+      Platform.isAndroid ? 'http://10.0.2.2:7545' : 'ws://192.168.100.26:7545';
 
-  final String _privateKey = '0x4cb412b7f10447c0094c1bd55311b11a720ca04e48db4dc85df5adf164461c3a';
+  final String _privateKey =
+      '0x4cb412b7f10447c0094c1bd55311b11a720ca04e48db4dc85df5adf164461c3a';
 
   Web3Client? _web3client;
   bool isLoading = true;
@@ -42,12 +45,12 @@ class GanacheConnectionProvider with ChangeNotifier {
 
   Future<void> getAbi() async {
     String abiStringFile =
-    await rootBundle.loadString('build/contracts/HelloWorld.json');
+        await rootBundle.loadString('build/contracts/HelloWorld.json');
     final jsonAbi = jsonDecode(abiStringFile);
     _abiCode = jsonEncode(jsonAbi['abi']);
 
-
-    _contractAddress = EthereumAddress.fromHex(jsonAbi['networks']['5777']['address']);
+    _contractAddress =
+        EthereumAddress.fromHex(jsonAbi['networks']['5777']['address']);
   }
 
   Future<void> getCredentials() async {
@@ -55,7 +58,8 @@ class GanacheConnectionProvider with ChangeNotifier {
   }
 
   Future<void> getDeployedContract() async {
-    _contract = DeployedContract(ContractAbi.fromJson(_abiCode!, "HelloWorld"), _contractAddress!);
+    _contract = DeployedContract(
+        ContractAbi.fromJson(_abiCode!, "HelloWorld"), _contractAddress!);
 
     _message = _contract!.function("message");
     _setMessage = _contract!.function("setMessage");
@@ -63,7 +67,8 @@ class GanacheConnectionProvider with ChangeNotifier {
   }
 
   getMessage() async {
-    final _mymessage = await _web3client!.call(contract: _contract!, function: _message!, params: []);
+    final _mymessage = await _web3client!
+        .call(contract: _contract!, function: _message!, params: []);
 
     deployedName = _mymessage[0];
     isLoading = false;
@@ -73,11 +78,13 @@ class GanacheConnectionProvider with ChangeNotifier {
   setMessage(String message) async {
     isLoading = true;
     notifyListeners();
-    await _web3client!.sendTransaction(_credentials!,
+    await _web3client!.sendTransaction(
+        _credentials!,
         Transaction.callContract(
             contract: _contract!,
             function: _setMessage!,
-            parameters: [message]), chainId: 1337,
+            parameters: [message]),
+        chainId: 1337,
         fetchChainIdFromNetworkId: false);
 
     getMessage();

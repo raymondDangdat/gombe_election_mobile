@@ -39,6 +39,21 @@ dependencies:
   provider: ^6.1.2
   http: ^1.2.2
   web_socket_channel: ^3.0.1
+  flutter_svg: ^2.0.10+1
+  jiffy: ^6.2.1
+
+  flutter_screenutil: ^5.9.3
+  iconsax_flutter: ^1.0.0
+  top_snackbar_flutter: ^3.1.0
+  flutter_email_sender: ^6.0.3
+  intl: ^0.19.0
+  cached_network_image: ^3.3.1
+
+  flutter_animate: ^4.5.0
+
+  shared_preferences: ^2.2.3
+  pin_code_fields: ^8.0.1
+  dropdown_button2: ^2.3.9
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +65,16 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
+
+  flutter_launcher_icons: ^0.13.1
+
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/gombe_logo.jpeg"
+  min_sdk_android: 21 # android min sdk min:16, default 21
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -65,7 +90,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - truffle-artifacts/TestElection.json
-  #   - images/a_dot_ham.jpeg
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
