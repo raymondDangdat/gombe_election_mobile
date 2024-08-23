@@ -9,6 +9,7 @@ import '../../../../../resources/constants/color_constants.dart';
 import '../../../../../resources/constants/font_constants.dart';
 import '../../../../../widgets/close_icon_widget.dart';
 import '../../../../../widgets/custom_snack_back.dart';
+import '../../../../../widgets/private_key_dialog.dart';
 
 Future<void> showChangeElectionPhaseInfoDialog(BuildContext importedContext,
     {bool barrierDismissible = false}) async {
@@ -60,7 +61,9 @@ class _DeleteAccountInfoDialogState extends State<DeleteAccountInfoDialog> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const CloseIconWidget(),
-                const SizedBox(height: 20,),
+                const SizedBox(
+                  height: 20,
+                ),
                 BodyTextPrimaryWithLineHeight(
                   text:
                       "Are You Sure You Want to change election phase from ${electionProProvider.currentElectionPhase} to ${electionProProvider.nextElectionPhase}?",
@@ -89,14 +92,21 @@ class _DeleteAccountInfoDialogState extends State<DeleteAccountInfoDialog> {
                   height: 20.h,
                 ),
                 OutlineBtn("Yes, Proceed", () async {
-                  if(electionProProvider.currentUserAddress == null){
+                  if (electionProProvider.currentUserAddress == null) {
                     customSnackBar(context, "Something is wrong here");
-                  }else{
-                    await electionProProvider.changeElectionState(
-                        context: context, address:  electionProProvider.currentUserAddress!.toString());
-                    Navigator.pop(context);
-                  }
+                  } else {
+                    final privateKey = await  showPrivateKeyDialog(context);
+                    if(privateKey.isNotEmpty){
+                      await electionProProvider.changeElectionState(
+                          context: context,
+                          privateKey: privateKey,
+                          address:
+                          electionProProvider.currentUserAddress!.toString());
+                      Navigator.pop(context);
+                    }
 
+
+                  }
                 })
               ],
             ),

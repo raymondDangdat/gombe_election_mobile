@@ -6,6 +6,7 @@ import 'package:gombe_election/providers/authentication_provider.dart';
 import 'package:gombe_election/providers/election_provider.dart';
 import 'package:gombe_election/resources/navigation_utils.dart';
 import 'package:gombe_election/screens/bottom_nav_screens/bottom_nav_screen.dart';
+import 'package:gombe_election/screens/voter_module/election_observer_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:web3dart/credentials.dart';
 import '../../../Widgets/components.dart';
@@ -17,7 +18,6 @@ import '../../../widgets/custom_snack_back.dart';
 import '../../../widgets/label_widget.dart';
 import '../../../widgets/textfields.dart';
 import '../../voter_module/voter_home_screen.dart';
-import '../widgets/on_boarding_back_button.dart';
 import '../widgets/onboarding_header.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -33,13 +33,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     walletAddressController.text =
-        kDebugMode ? "0x5CF1ac05B56502eed24fa3765030e3a7635d25C5" : "";
+        kDebugMode ? "" : "";
 
-    walletAddressController.text =
-    kDebugMode ? "0x16f901508230A8531F005d2d501a4383AA21c127" : "";
+    // walletAddressController.text =
+    // kDebugMode ? "0xf9A9c5802E38c177415d17a68176201bE38B3F1B" : "";
 
     super.initState();
   }
+
   // 0x42187668F047c10691A3F76Ca458a8FD8A8823A1
   @override
   Widget build(BuildContext context) {
@@ -67,11 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const TopPadding(),
-                const Row(
-                  children: [
-                    OnBoardingBackButton(),
-                  ],
-                ),
                 SizedBox(
                   height: topPadding.h,
                 ),
@@ -130,37 +126,50 @@ class _LoginScreenState extends State<LoginScreen> {
                                       "Please enter a valid address",
                                     );
                                   } else {
-                                    try{
+                                    try {
                                       final address = await electionProvider
                                           .getElectionAdmin();
                                       if (address ==
                                           EthereumAddress.fromHex(
                                               walletAddressController.text)) {
-                                        electionProvider.updateCurrentUserAddress(address);
+                                        electionProvider
+                                            .updateCurrentUserAddress(address);
                                         navToWithScreenName(
                                             context: context,
                                             screen: const BottomNavScreen());
                                       } else {
                                         final voter =
-                                        await electionProvider.voterLogin(
-                                            EthereumAddress.fromHex(
-                                                walletAddressController.text),
-                                            context: context);
+                                            await electionProvider.voterLogin(
+                                                EthereumAddress.fromHex(
+                                                    walletAddressController
+                                                        .text),
+                                                context: context);
                                         if (voter != null) {
                                           electionProvider.updateVoter(voter);
-                                          navToWithScreenName(context: context, screen: const VoterHomeScreen());
+                                          navToWithScreenName(
+                                              context: context,
+                                              screen: const VoterHomeScreen());
                                         } else {
                                           debugPrint("Invalid voter");
                                         }
                                       }
-                                    }catch (e){
-                                      customSnackBar(context, "Error: ${e.toString()}");
+                                    } catch (e) {
+                                      customSnackBar(
+                                          context, "Error: ${e.toString()}");
                                     }
                                   }
                                 },
                               ),
                         SizedBox(
                           height: 20.h,
+                        ),
+
+                        MainButton(
+                          "Login As Observer",
+                              () async {
+
+                            navToWithScreenName(context: context, screen: const ElectionObserverScreen());
+                          },
                         ),
                         const SizedBox(
                           height: 40,

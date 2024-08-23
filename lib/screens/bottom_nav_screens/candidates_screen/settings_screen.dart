@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gombe_election/providers/authentication_provider.dart';
+import 'package:gombe_election/providers/election_provider.dart';
 import 'package:gombe_election/resources/navigation_utils.dart';
 import 'package:gombe_election/screens/get_started_screen/get_started_screen.dart';
 import 'package:provider/provider.dart';
@@ -29,14 +30,17 @@ class SettingScreen extends StatelessWidget {
           Expanded(
               child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding.w),
-            child: Consumer<AuthenticationProvider>(
-                builder: (ctx, authProvider, child) {
+            child: Consumer2<AuthenticationProvider, ElectionProvider>(
+                builder: (ctx, authProvider, electionProvider, child) {
               return Column(
                 children: [
                   SizedBox(
                     height: 100.h,
                   ),
                   MainButton("Logout", () {
+                    electionProvider.resetFilters();
+                    electionProvider.updateVoter(null);
+                    electionProvider.updateCurrentUserAddress(null);
                     navToWithScreenName(
                         context: context,
                         screen: const GetStartedScreen(),

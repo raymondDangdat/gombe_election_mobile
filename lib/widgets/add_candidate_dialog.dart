@@ -5,6 +5,7 @@ import 'package:gombe_election/Widgets/components.dart';
 import 'package:gombe_election/Widgets/custom_text.dart';
 import 'package:gombe_election/resources/constants/font_constants.dart';
 import 'package:gombe_election/widgets/label_widget.dart';
+import 'package:gombe_election/widgets/private_key_dialog.dart';
 import 'package:gombe_election/widgets/select_party_widget.dart';
 import 'package:gombe_election/widgets/select_qualification_widget.dart';
 import 'package:gombe_election/widgets/textfields.dart';
@@ -211,6 +212,7 @@ class _AddCandidateDialogState extends State<AddCandidateDialog>
                 ),
                 SizedBox(height: 40.h),
                 MainButton("Register Candidate", () async {
+
                   if (candidateNameController.text.isEmpty) {
                     customSnackBar(context, "Enter a valid Candidate name");
                   } else if (electionProvider.selectedLGA == null) {
@@ -223,14 +225,24 @@ class _AddCandidateDialogState extends State<AddCandidateDialog>
                   } else if (selectedDobString.isEmpty) {
                     customSnackBar(context, "Select Candidate Date of birth");
                   } else {
-                    final isRegistered = await electionProvider.addCandidate(
-                        name: candidateNameController.text,
-                        dob: _selectedDate.value.toString(),
-                        context: context);
-                    if (isRegistered) {
-                      electionProvider.getAllCandidates();
-                      // Navigator.pop(context);
+                    final privateKey = await  showPrivateKeyDialog(context);
+                    if(privateKey.isNotEmpty){
+                      final isRegistered = await electionProvider.addCandidate(
+                          name: candidateNameController.text,
+                          dob: _selectedDate.value.toString(),
+                          privateKey: privateKey,
+                          context: context);
+                      if (isRegistered) {
+                        setState(() {
+                          candidateNameController.text = "";
+                          selectedDobString = "";
+                          electionProvider.resetFilters();
+                        });
+                        electionProvider.getAllCandidates();
+                        // Navigator.pop(context);
+                      }
                     }
+
                   }
                 }),
                 SizedBox(

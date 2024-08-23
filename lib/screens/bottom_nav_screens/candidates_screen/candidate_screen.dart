@@ -244,7 +244,7 @@ class CandidatesScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               BodyTextLightWithLineHeight(
-                text: "Add Voter",
+                text: "Add Candidate",
                 textColor: white,
                 fontWeight: semiBoldFont,
               )

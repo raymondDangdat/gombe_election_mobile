@@ -5,6 +5,7 @@ import 'package:gombe_election/providers/authentication_provider.dart';
 import 'package:gombe_election/providers/election_provider.dart';
 import 'package:gombe_election/resources/navigation_utils.dart';
 import 'package:gombe_election/screens/bottom_nav_screens/candidates_screen/settings_screen.dart';
+import 'package:gombe_election/screens/bottom_nav_screens/home/election_results_screen.dart';
 import 'package:gombe_election/screens/bottom_nav_screens/widgets/white_app_bar.dart';
 import 'package:provider/provider.dart';
 import '../../../Widgets/custom_text.dart';
@@ -26,7 +27,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final electionProvider =
+      Provider.of<ElectionProvider>(context, listen: false);
+      electionProvider.startFetchCurrentElectionPhase();
+    });
     super.initState();
   }
 
@@ -113,8 +118,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     Padding(
                       padding:
                           EdgeInsets.symmetric(horizontal: horizontalPadding.w),
-                      child: MainButton("Change State", () {
-                        showChangeElectionPhaseInfoDialog(context);
+                      child: MainButton(
+                          electionProvider.currentElectionPhase == resultPhase
+                              ? "Results"
+                              : "Change State", () {
+                        if (electionProvider.currentElectionPhase ==
+                            resultPhase) {
+                          navToWithScreenName(
+                              context: context,
+                              screen: const ElectionResultsScreen());
+                        } else {
+                          showChangeElectionPhaseInfoDialog(context);
+                        }
                       }),
                     ),
                   ],

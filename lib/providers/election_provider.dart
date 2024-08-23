@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
@@ -6,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:gombe_election/models/candidate_model.dart';
 import 'package:gombe_election/models/voter_model.dart';
+import 'package:gombe_election/resources/constants/image_constant.dart';
+import 'package:gombe_election/resources/constants/string_constants.dart';
 import 'package:gombe_election/utils/functions.dart';
 import 'package:http/http.dart' as http;
 import 'package:web3dart/web3dart.dart';
@@ -25,11 +28,11 @@ class ElectionProvider extends ChangeNotifier {
   // "http://$ip:$port";
   final String _wsURL =
       Platform.isAndroid ? "http://10.0.2.2:7545" : "ws://192.168.100.26:7545";
-  final String _privateKey =
-      "0x80eb2cee59576904c3dc6bc4c812b4049ef62b59c8a8889d840de75b49fc7861";
+  // final String _privateKey =
+  //     "0x80eb2cee59576904c3dc6bc4c812b4049ef62b59c8a8889d840de75b49fc7861";
 
   late Web3Client _client;
-  late Credentials _credentials;
+  // late Credentials _credentials;
   late DeployedContract _contract;
 
   String resMessage = "";
@@ -46,8 +49,6 @@ class ElectionProvider extends ChangeNotifier {
   late ContractFunction registerCandidateFunction;
   late ContractFunction electionPhaseFunction;
 
-  String adminAddress = "0x5CF1ac05B56502eed24fa3765030e3a7635d25C5";
-  String voterAddress = "0x16f901508230A8531F005d2d501a4383AA21c127";
 
   String currentElectionPhase = "NA";
   int currentPhaseInt = 0;
@@ -58,6 +59,29 @@ class ElectionProvider extends ChangeNotifier {
 
   ElectionProvider(context) {
     initialize(context);
+  }
+
+  int _start = 10;
+  Timer? timer;
+  void startFetchCurrentElectionPhase() {
+    const oneSec = Duration(seconds: 1);
+    timer = Timer.periodic(
+      oneSec,
+          (Timer timer) async{
+        if (_start == 0) {
+          getCurrentElectionStage();
+          _start = 10;
+        } else {
+
+            _start--;
+        }
+      },
+    );
+  }
+
+  void resetHomeSupportCounter(){
+    timer?.cancel();
+    notifyListeners();
   }
 
   initialize(context) async {
@@ -75,7 +99,7 @@ class ElectionProvider extends ChangeNotifier {
     final contractAddress =
         EthereumAddress.fromHex(abiJson["networks"]["5777"]["address"]);
 
-    _credentials = EthPrivateKey.fromHex(_privateKey);
+    // _credentials = EthPrivateKey.fromHex(_privateKey);
     _contract = DeployedContract(
         ContractAbi.fromJson(abi, contractName), contractAddress);
 
@@ -158,7 +182,7 @@ class ElectionProvider extends ChangeNotifier {
   Future<bool> registerVoter(String voterAddress,
       {required BuildContext context,
       required String lga,
-      required String name}) async {
+      required String name, required String privateKey}) async {
     isError = true;
     bool isRegistered = false;
     notifyListeners();
@@ -174,13 +198,12 @@ class ElectionProvider extends ChangeNotifier {
           lga,
           name
         ], // Pass the voter's address
-        from: EthereumAddress.fromHex(
-            adminAddress), // Replace with your admin address
+        from: currentUserAddress, // Replace with your admin address
       );
 
       // Send the transaction with Ganache chain ID
       final result = await _client.sendTransaction(
-        _credentials,
+        EthPrivateKey.fromHex(privateKey),
         transaction,
         chainId: 1337, // Chain ID for Ganache
       );
@@ -208,7 +231,7 @@ class ElectionProvider extends ChangeNotifier {
   Future<bool> addCandidate(
       {required String name,
       required String dob,
-      required BuildContext context}) async {
+      required BuildContext context, required String privateKey}) async {
     bool registered = false;
     showLoader(context, message: "Registering Voter...");
     try {
@@ -224,13 +247,12 @@ class ElectionProvider extends ChangeNotifier {
           selectedQualification ?? "", // _qualification
           selectedLGA?.id ?? ""
         ],
-        from: EthereumAddress.fromHex(
-            adminAddress), // Replace with your admin address
+        from: currentUserAddress, // Replace with your admin address
       );
 
       // Send the transaction
       final result = await _client.sendTransaction(
-        _credentials,
+        EthPrivateKey.fromHex(privateKey),
         transaction,
         chainId: 1337, // Change to the appropriate chain ID
         // fetchChainIdFromNetworkId: true,
@@ -239,11 +261,15 @@ class ElectionProvider extends ChangeNotifier {
       popLoader(context: context);
 
       registered = true;
+      isError = false;
+      resMessage = "Candidate added";
       debugPrint("Candidate added with transaction hash: $result");
       return registered;
     } catch (e) {
       popLoader(context: context);
       debugPrint("Error adding candidate: $e");
+      resMessage = "$e";
+      notifyListeners();
       throw e; // Optionally rethrow or handle the error as needed
     }
   }
@@ -271,10 +297,10 @@ class ElectionProvider extends ChangeNotifier {
 
       if (stage >= 0 && stage < PHASE.values.length) {
         currentElectionPhase = stage == 0
-            ? "Registration"
+            ? registrationPhase
             : stage == 1
-                ? "Voting"
-                : "Done";
+                ? votingPhase
+                : resultPhase;
         nextElectionPhase = stage == 0 ? "Voting" : "Done";
         currentPhaseInt = stage;
         notifyListeners();
@@ -289,7 +315,8 @@ class ElectionProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> changeElectionState({required BuildContext context, required String address}) async {
+  Future<void> changeElectionState(
+      {required BuildContext context, required String address, required String privateKey}) async {
     isError = true;
     notifyListeners();
     try {
@@ -302,11 +329,11 @@ class ElectionProvider extends ChangeNotifier {
         parameters: [
           BigInt.from(currentPhaseInt == 0 ? 1 : 2)
         ], // Pass the enum index as a BigInt
-        from: EthereumAddress.fromHex(
-            address), // Replace with your admin address
+        from:
+            EthereumAddress.fromHex(address), // Replace with your admin address
       );
       final result = await _client.sendTransaction(
-        _credentials,
+        EthPrivateKey.fromHex(privateKey),
         transaction,
         chainId: 1337, // Chain ID for Ganache
       );
@@ -325,31 +352,46 @@ class ElectionProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> castVote(int candidateId) async {
+  Future<bool> castVote(int candidateId,
+      {required BuildContext context, required String privateKey}) async {
+    bool hasCasted = false;
+    showLoader(context);
     try {
       debugPrint("In Cast Vote Method::::");
+      debugPrint(
+          "In Cast Vote Method:::: Private Key $privateKey $currentUserAddress");
 
       // Prepare the transaction
       final transaction = Transaction.callContract(
         contract: _contract,
         function: _contract.function('castVote'),
         parameters: [BigInt.from(candidateId)], // Convert candidateId to BigInt
-        from: EthereumAddress.fromHex(
-            voterAddress), // Replace with the voter's address
+        from: currentUserAddress, // Replace with the voter's address
       );
 
       // Send the transaction with Ganache chain ID
       final result = await _client.sendTransaction(
-        _credentials,
+        EthPrivateKey.fromHex(privateKey),
         transaction,
         chainId: 1337, // Chain ID for Ganache
       );
 
+      popLoader(context: context);
+
       debugPrint("Vote cast with transaction hash: $result");
+      hasCasted = true;
+      isError = false;
+      resMessage = "Vote Casted!";
+      notifyListeners();
     } catch (e) {
+      popLoader(context: context);
+      resMessage = e.toString();
+      notifyListeners();
       debugPrint("Error casting vote: $e");
       throw e; // Optionally rethrow or handle the error as needed
     }
+
+    return hasCasted;
   }
 
   bool loadingAllCandidates = false;
@@ -404,9 +446,12 @@ class ElectionProvider extends ChangeNotifier {
       reservedCandidates.addAll(candidatesListToDisplay);
       notifyListeners();
       debugPrint("Candidates retrieved: ${candidatesListToDisplay.length}");
-
+      loadingAllCandidates = false;
+      notifyListeners();
       return requestFetched;
     } catch (e) {
+      loadingAllCandidates = false;
+      notifyListeners();
       debugPrint("Error retrieving candidates: $e");
       throw e; // Optionally rethrow or handle the error as needed
     }
@@ -418,10 +463,16 @@ class ElectionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void filterCandidates() {
-    candidatesListToDisplay = reservedCandidates
-        .where((candidate) => selectedLGA?.id == candidate.lga)
-        .toList();
+  void filterCandidates({String lgId = ""}) {
+    if (lgId.isEmpty) {
+      candidatesListToDisplay = reservedCandidates
+          .where((candidate) => selectedLGA?.id == candidate.lga)
+          .toList();
+    } else {
+      candidatesListToDisplay = reservedCandidates
+          .where((candidate) => lgId == candidate.lga)
+          .toList();
+    }
     notifyListeners();
   }
 
@@ -461,16 +512,21 @@ class ElectionProvider extends ChangeNotifier {
     return votersToDisplay;
   }
 
+  CandidateModel? selectedCandidate;
+  void selectCandidate(CandidateModel? selection) {
+    selectedCandidate = selection;
+    notifyListeners();
+  }
 
   VoterModel? voter;
 
   EthereumAddress? currentUserAddress;
-  void updateCurrentUserAddress(EthereumAddress? newAddress){
+  void updateCurrentUserAddress(EthereumAddress? newAddress) {
     currentUserAddress = newAddress;
     notifyListeners();
   }
 
-  void updateVoter(VoterModel? newVoter){
+  void updateVoter(VoterModel? newVoter) {
     voter = newVoter;
     currentUserAddress = voter?.voterAddress;
     notifyListeners();
@@ -479,7 +535,9 @@ class ElectionProvider extends ChangeNotifier {
   Future<VoterModel?> voterLogin(EthereumAddress voterAddress,
       {required BuildContext context, showLoading = true}) async {
     VoterModel? loginVoter;
-    showLoader(context, message: "Getting your details");
+    if (showLoading) {
+      showLoader(context, message: "Getting your details");
+    }
     isError = true;
     voter = null;
     currentUserAddress = null;
@@ -491,20 +549,29 @@ class ElectionProvider extends ChangeNotifier {
       );
 
       debugPrint("Voter login detail::::::$voterDetails");
-      final result = VoterModel(name: voterDetails[3] as String, lga: voterDetails[4] as String, hasVoted: voterDetails[0] as bool,
-      voterAddress: voterAddress);
+      final result = VoterModel(
+          name: voterDetails[3] as String,
+          lga: voterDetails[4] as String,
+          hasVoted: voterDetails[0] as bool,
+          voterAddress: voterAddress);
 
-      if(result.name.isEmpty || result.lga.isEmpty){
+      if (result.name.isEmpty || result.lga.isEmpty) {
         resMessage = "Invalid user";
         notifyListeners();
-      }else{
+      } else {
         loginVoter = result;
+        updateVoter(loginVoter);
+        notifyListeners();
       }
-      popLoader(context: context);
+      if (showLoading) {
+        popLoader(context: context);
+      }
       return loginVoter;
     } catch (error) {
+      if (showLoading) {
+        popLoader(context: context);
+      }
       resMessage = "Could not login";
-      notifyListeners();
       notifyListeners();
       debugPrint('Error logging in as voter: $error');
       return null;
@@ -520,7 +587,7 @@ class ElectionProvider extends ChangeNotifier {
         function: _contract.function('getVoterDetails'),
         params: [voterAddress],
       );
-      debugPrint("Voter Details::: ${voterDetails}");
+      // debugPrint("Voter Details::: ${voterDetails}");
       return {
         'hasVoted': voterDetails[0] as bool,
         'vote': (voterDetails[1] as BigInt).toInt(),
@@ -556,4 +623,20 @@ final listOfQualifications = [
   "PhD",
 ];
 
-final listOfParties = ["APC", "PDP", "LP", "APGA", "NNPP", "YPP", "SDP", "ADC"];
+final listOfParties = [apc, pdp, lp, apga, nnpp, ypp, sdp, adc];
+
+String returnPartyLogo(String party) {
+  return party == apc
+      ? apcLogo
+      : party == pdp
+          ? pdpLogo
+          : party == lp
+              ? lpLogo
+              : party == apga
+                  ? apgaLogo
+                  : party == nnpp
+                      ? nnppLogo
+                      : party == ypp
+                          ? yppLogo
+                          : "";
+}

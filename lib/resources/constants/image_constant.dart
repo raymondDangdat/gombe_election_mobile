@@ -1,4 +1,12 @@
 const gombeLog = "assets/images/gombe_logo.jpeg";
+const adpLogo = "assets/images/adp_logo.jpeg";
+const apcLogo = "assets/images/apc_logo.jpeg";
+const apgaLogo = "assets/images/apga_logo.jpeg";
+const lpLogo = "assets/images/lp_logo.png";
+const nnppLogo = "assets/images/nnpp_logo.jpeg";
+const pdpLogo = "assets/images/pdp_logo.png";
+const yppLogo = "assets/images/ypp_logo.jpeg";
+const filterIcon = "assets/images/filter_list.svg";
 
 const backSpace = "assets/images/back_space.svg";
 const spaceBar = "assets/images/space_bar.png";
@@ -87,7 +95,6 @@ const profileActiveIcon = "assets/images/profile_active_icon.svg";
 const transactionActiveIcon = "assets/images/transaction_icon.svg";
 const transactionInActiveIcon = "assets/images/transaction_in_active_icon.svg";
 const searchIconSvg = "assets/images/search_icon_svg.svg";
-const filterIcon = "assets/images/filter_icon.svg";
 const transactionFilterSelectedIcon =
     "assets/images/filter_option_selected_icon.svg";
 const deleteAccountImg = "assets/images/delete_account_img.svg";

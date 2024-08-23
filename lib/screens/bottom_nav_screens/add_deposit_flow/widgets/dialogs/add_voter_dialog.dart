@@ -12,6 +12,7 @@ import '../../../../../resources/constants/color_constants.dart';
 import '../../../../../resources/constants/dimension_constants.dart';
 import '../../../../../resources/constants/image_constant.dart';
 import '../../../../../widgets/custom_snack_back.dart';
+import '../../../../../widgets/private_key_dialog.dart';
 import '../../../buy_fuel_flow/widgets/select_lga_widget.dart';
 
 Future<void> showAddVoterDialog(BuildContext importedContext,
@@ -218,19 +219,24 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
                   } else if (voterWalletAddressController.text.length < 32) {
                     customSnackBar(context, "Enter valid Voter Address");
                   } else {
-                    final isRegistered = await electionProvider.registerVoter(
-                        voterWalletAddressController.text,
-                        context: context,
-                        name: voterNameController.text,
-                        lga: electionProvider.selectedLGA?.id ?? "");
-                    if (isRegistered) {
-                      electionProvider.getAllVoters(context: context);
-                      // Navigator.pop(context);
-                      voterNameController.text = "";
-                      voterWalletAddressController.text = "";
-                      selectedDobString = "";
-                      setState(() {});
+                    final privateKey = await  showPrivateKeyDialog(context);
+                    if(privateKey.length >= 32){
+                      final isRegistered = await electionProvider.registerVoter(
+                          voterWalletAddressController.text,
+                          context: context,
+                          privateKey: privateKey,
+                          name: voterNameController.text,
+                          lga: electionProvider.selectedLGA?.id ?? "");
+                      if (isRegistered) {
+                        electionProvider.getAllVoters(context: context);
+                        // Navigator.pop(context);
+                        voterNameController.text = "";
+                        voterWalletAddressController.text = "";
+                        selectedDobString = "";
+                        setState(() {});
+                      }
                     }
+
                   }
                 }),
                 SizedBox(

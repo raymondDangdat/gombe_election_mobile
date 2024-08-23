@@ -75,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final sharedPref = await SharedPreferences.getInstance();
 
     // Check for Internet Connection
-    bool isConnected = await connectionChecker();
+    // bool isConnected = await connectionChecker();
     // Get keep me Logged In Value
     debugPrint("CONNECTED TO THE INTERNET=============");
 
