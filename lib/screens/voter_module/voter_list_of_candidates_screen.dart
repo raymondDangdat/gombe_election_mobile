@@ -95,13 +95,20 @@ class _VoterListOfCandidatesScreenState
                             itemBuilder: (context, index) {
                               final candidate = electionProvider
                                   .candidatesListToDisplay[index];
+                              final lgRegisteredVoters = electionProvider
+                                  .votersToDisplay
+                                  .where((voter) => voter.lga == candidate.lga)
+                                  .toList();
+                              final lgTotalVoters = lgRegisteredVoters
+                                  .where((voter) => voter.hasVoted)
+                                  .toList();
                               return Padding(
                                 padding: EdgeInsets.only(
                                     bottom: 20,
                                     left: horizontalPadding.w,
                                     right: horizontalPadding.w),
                                 child: electionProvider.voter!.hasVoted
-                                    ? CandidateWidget2(candidate: candidate)
+                                    ? CandidateWidget2(candidate: candidate, totalScore: lgTotalVoters.length,)
                                     : CandidateWidget1(candidate: candidate),
                               );
                             }))
@@ -246,7 +253,9 @@ class CandidateWidget1 extends StatelessWidget {
 class CandidateWidget2 extends StatelessWidget {
   final CandidateModel candidate;
   final Color bgColor;
+  final int totalScore;
   const CandidateWidget2({super.key, required this.candidate,
+    required this.totalScore,
   this.bgColor = const Color.fromRGBO(13, 77, 7, 1)});
 
   @override
@@ -316,6 +325,23 @@ class CandidateWidget2 extends StatelessWidget {
                     ),
                     HeaderText(
                       text: "${candidate.voteCount} ",
+                      fontSize: 32,
+                      fontWeight: boldFont,
+                      textColor: white,
+                    )
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const BodyTextPrimaryWithLineHeight(
+                      text: "Percent: ",
+                      textColor: white,
+                      fontWeight: semiBoldFont,
+                      fontSize: 20,
+                    ),
+                    HeaderText(
+                      text: "${((candidate.voteCount * 100) / totalScore).toStringAsFixed(2)} ",
                       fontSize: 32,
                       fontWeight: boldFont,
                       textColor: white,

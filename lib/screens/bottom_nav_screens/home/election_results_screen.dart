@@ -11,6 +11,7 @@ import '../../../providers/election_provider.dart';
 import '../../../resources/constants/color_constants.dart';
 import '../../../resources/constants/dimension_constants.dart';
 import '../../../resources/constants/font_constants.dart';
+import '../../../widgets/on_boarding_back_button.dart';
 import '../../../widgets/white_app_bar.dart';
 
 class ElectionResultsScreen extends StatefulWidget {
@@ -45,6 +46,11 @@ class _ElectionResultsScreenState extends State<ElectionResultsScreen> {
           children: [
             SizedBox(
               height: 20.h,
+            ),
+            const Row(
+              children: [
+                OnBoardingBackButton(),
+              ],
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding.w),
@@ -163,7 +169,7 @@ class _ElectionResultsScreenState extends State<ElectionResultsScreen> {
                                             padding: EdgeInsets.only(
                                               bottom: 10.h
                                             ),
-                                            child: CandidateWidget2(candidate: candidate,
+                                            child: CandidateWidget2(candidate: candidate, totalScore: lgTotalVoters.length,
                                             bgColor: Color.fromRGBO(13, 77, 7, 1),),
                                           );
                                         })

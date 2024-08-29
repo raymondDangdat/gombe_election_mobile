@@ -35,6 +35,10 @@ class ElectionProvider extends ChangeNotifier {
   // late Credentials _credentials;
   late DeployedContract _contract;
 
+  List<EthereumAddress>? _accounts;
+
+
+
   String resMessage = "";
 
   bool isError = true;
@@ -90,6 +94,8 @@ class ElectionProvider extends ChangeNotifier {
       debugPrint("Initializing web3client======");
       return IOWebSocketChannel.connect(_wsURL).cast<String>();
     });
+
+
 
     final String abiStringFile = await DefaultAssetBundle.of(context)
         .loadString("truffle-artifacts/$contractName.json");

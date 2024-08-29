@@ -155,7 +155,7 @@ class _VotersScreenState extends State<VotersScreen> {
                       )
                     : electionProvider.votersToDisplay.isEmpty
                         ? const EmptyStateWidget(
-                            message: "No Register Voters Yet",
+                            message: "No Registered Voters Yet",
                           )
                         : ListView.builder(
                             itemCount: electionProvider.votersToDisplay.length,

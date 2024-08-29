@@ -181,6 +181,7 @@ class _ElectionObserverScreenState extends State<ElectionObserverScreen> {
                                         bottom: 10.h
                                     ),
                                     child: CandidateWidget2(candidate: candidate,
+                                      totalScore: lgTotalVoters.length,
                                       bgColor: const Color.fromRGBO(13, 77, 7, 1),),
                                   );
                                 })
