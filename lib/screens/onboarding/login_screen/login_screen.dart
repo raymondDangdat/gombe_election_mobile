@@ -127,8 +127,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
                                   } else {
                                     try {
+                                      debugPrint("Login Method called::::::");
                                       final address = await electionProvider
                                           .getElectionAdmin();
+                                      debugPrint("The address is:: ${address.toString()}");
                                       if (address ==
                                           EthereumAddress.fromHex(
                                               walletAddressController.text)) {
@@ -155,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       }
                                     } catch (e) {
                                       customSnackBar(
-                                          context, "Error: ${e.toString()}");
+                                          context, "Login Error: ${e.toString()}");
                                     }
                                   }
                                 },

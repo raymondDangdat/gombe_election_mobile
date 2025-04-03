@@ -27,7 +27,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Screen Height ::: ${MediaQuery.of(context).size.height}");
+    // debugPrint("Screen Height ::: ${MediaQuery.of(context).size.height}");
     return Scaffold(
       backgroundColor: appBgColor,
       appBar: whiteAppBar,

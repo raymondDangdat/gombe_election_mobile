@@ -23,7 +23,8 @@ class ElectionProvider extends ChangeNotifier {
   static const String ip = "HTTP://127.0.0.1";
   static const String port = "7545";
   final String _rpcURL = Platform.isAndroid
-      ? "http://10.0.2.2:7545"
+      ?
+  "http://10.0.2.2:7545"
       : 'http://192.168.100.26:7545';
   // "http://$ip:$port";
   final String _wsURL =
@@ -297,7 +298,10 @@ class ElectionProvider extends ChangeNotifier {
         params: [],
       );
 
+      debugPrint("getCurrentElectionStage response::::: $response");
+
       var stage = response[0].toInt(); // Convert the BigInt to int
+
 
       debugPrint("Current election stage: $stage");
 
