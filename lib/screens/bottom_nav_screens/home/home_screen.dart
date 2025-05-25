@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final electionProvider =
       Provider.of<ElectionProvider>(context, listen: false);
-      electionProvider.startFetchCurrentElectionPhase();
+      electionProvider.startFetchCurrentElectionPhase(context: context);
     });
     super.initState();
   }

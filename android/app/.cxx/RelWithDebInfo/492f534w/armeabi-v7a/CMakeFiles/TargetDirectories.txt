@@ -1,0 +1,2 @@
+/Users/dangdat/StudioProjects/gombe_election/android/app/.cxx/RelWithDebInfo/492f534w/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/dangdat/StudioProjects/gombe_election/android/app/.cxx/RelWithDebInfo/492f534w/armeabi-v7a/CMakeFiles/rebuild_cache.dir

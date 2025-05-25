@@ -33,7 +33,11 @@ class _VoterListOfCandidatesScreenState
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final electionProvider =
+      Provider.of<ElectionProvider>(context, listen: false);
+      electionProvider.getAllVoters(context: context);
+    });
     super.initState();
   }
 
@@ -99,6 +103,7 @@ class _VoterListOfCandidatesScreenState
                                   .votersToDisplay
                                   .where((voter) => voter.lga == candidate.lga)
                                   .toList();
+                              debugPrint("${electionProvider.votersToDisplay.length} Registered voters:: ${electionProvider.votersToDisplay.length}");
                               final lgTotalVoters = lgRegisteredVoters
                                   .where((voter) => voter.hasVoted)
                                   .toList();
@@ -108,8 +113,8 @@ class _VoterListOfCandidatesScreenState
                                     left: horizontalPadding.w,
                                     right: horizontalPadding.w),
                                 child: electionProvider.voter!.hasVoted
-                                    ? CandidateWidget2(candidate: candidate, totalScore: lgTotalVoters.length,)
-                                    : CandidateWidget1(candidate: candidate),
+                                    ? CandidateWidget2(candidate: candidate, totalVoters: lgTotalVoters.length,)
+                                    : CandidateWidget1(candidate: candidate,),
                               );
                             }))
           ],
@@ -253,9 +258,9 @@ class CandidateWidget1 extends StatelessWidget {
 class CandidateWidget2 extends StatelessWidget {
   final CandidateModel candidate;
   final Color bgColor;
-  final int totalScore;
+  final int totalVoters;
   const CandidateWidget2({super.key, required this.candidate,
-    required this.totalScore,
+    required this.totalVoters,
   this.bgColor = const Color.fromRGBO(13, 77, 7, 1)});
 
   @override
@@ -341,7 +346,7 @@ class CandidateWidget2 extends StatelessWidget {
                       fontSize: 20,
                     ),
                     HeaderText(
-                      text: "${((candidate.voteCount * 100) / totalScore).toStringAsFixed(2)} ",
+                      text: "${((candidate.voteCount * 100) / totalVoters).toStringAsFixed(2)} ",
                       fontSize: 32,
                       fontWeight: boldFont,
                       textColor: white,

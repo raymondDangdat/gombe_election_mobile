@@ -23,11 +23,11 @@ class ElectionProvider extends ChangeNotifier {
   static const String ip = "HTTP://127.0.0.1";
   static const String port = "7545";
   final String _rpcURL = Platform.isAndroid
-      ? "http://10.0.2.2:7545"
+      ? "http://172.20.10.4:7545"
       : 'http://192.168.100.26:7545';
   // "http://$ip:$port";
   final String _wsURL =
-      Platform.isAndroid ? "http://10.0.2.2:7545" : "ws://192.168.100.26:7545";
+      Platform.isAndroid ? "http://172.20.10.4:7545" : "ws://192.168.100.26:7545";
   // final String _privateKey =
   //     "0x80eb2cee59576904c3dc6bc4c812b4049ef62b59c8a8889d840de75b49fc7861";
 
@@ -67,13 +67,13 @@ class ElectionProvider extends ChangeNotifier {
 
   int _start = 10;
   Timer? timer;
-  void startFetchCurrentElectionPhase() {
+  void startFetchCurrentElectionPhase({required BuildContext context}) {
     const oneSec = Duration(seconds: 1);
     timer = Timer.periodic(
       oneSec,
           (Timer timer) async{
         if (_start == 0) {
-          getCurrentElectionStage();
+          getCurrentElectionStage(context: context);
           _start = 10;
         } else {
 
@@ -112,7 +112,7 @@ class ElectionProvider extends ChangeNotifier {
     registerCandidateFunction = _contract.function("addCandidate");
     electionPhaseFunction = _contract.function("currentElectionStage");
 
-    getCurrentElectionStage();
+    getCurrentElectionStage(context: context);
     // await addCandidate("Yusuf Ahma", "APC", 40, "SSCE");
 
     // changeElectionState(PHASE.voting);
@@ -280,14 +280,8 @@ class ElectionProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> getElectionPhase() async {
-    final result = await _client
-        .call(contract: _contract, function: electionPhaseFunction, params: []);
-    debugPrint("Current election Phase");
-    debugPrint("The Current Election Phase:::: $result");
-  }
 
-  Future<PHASE?> getCurrentElectionStage() async {
+  Future<PHASE?> getCurrentElectionStage({required BuildContext context}) async {
     try {
       debugPrint("Getting current election stage::::");
 
@@ -309,6 +303,9 @@ class ElectionProvider extends ChangeNotifier {
                 : resultPhase;
         nextElectionPhase = stage == 0 ? "Voting" : "Done";
         currentPhaseInt = stage;
+        if(currentPhaseInt == 1){
+          getAllVoters(context: context);
+        }
         notifyListeners();
         return PHASE.values[stage];
       } else {
@@ -343,7 +340,7 @@ class ElectionProvider extends ChangeNotifier {
         transaction,
         chainId: 1337, // Chain ID for Ganache
       );
-      getCurrentElectionStage();
+      getCurrentElectionStage(context: context);
       debugPrint("Election state changed with transaction hash: $result");
       popLoader(context: context);
       isError = false;
@@ -487,8 +484,7 @@ class ElectionProvider extends ChangeNotifier {
 
   bool loadingAllVoters = false;
   Future<List<VoterModel>> getAllVoters({required BuildContext context}) async {
-    votersToDisplay = [];
-    reservedVoters = [];
+
     // Retrieve all voter addresses
     loadingAllVoters = true;
     notifyListeners();
@@ -498,6 +494,9 @@ class ElectionProvider extends ChangeNotifier {
       function: _contract.function('getAllVoterAddresses'),
       params: [],
     );
+
+    votersToDisplay = [];
+    reservedVoters = [];
     // Loop through each voter address and get their details
     for (var address in voterAddresses[0]) {
       final voterDetails = await getVoterDetails(

@@ -1,0 +1,1 @@
+/Users/dangdat/StudioProjects/gombe_election/build/app/intermediates/cxx/RelWithDebInfo/492f534w/obj/arm64-v8a

@@ -169,7 +169,7 @@ class _ElectionResultsScreenState extends State<ElectionResultsScreen> {
                                             padding: EdgeInsets.only(
                                               bottom: 10.h
                                             ),
-                                            child: CandidateWidget2(candidate: candidate, totalScore: lgTotalVoters.length,
+                                            child: CandidateWidget2(candidate: candidate, totalVoters: lgTotalVoters.length,
                                             bgColor: Color.fromRGBO(13, 77, 7, 1),),
                                           );
                                         })
