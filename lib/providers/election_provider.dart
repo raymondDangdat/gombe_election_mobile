@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -13,7 +14,9 @@ import 'package:gombe_election/utils/functions.dart';
 import 'package:http/http.dart' as http;
 import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
-
+import 'package:web3dart/credentials.dart';
+import 'package:bip39/bip39.dart' as bip39;
+import 'package:bip32/bip32.dart' as bip32;
 import '../models/local_government_model.dart';
 
 enum PHASE { reg, voting, done }
@@ -185,13 +188,15 @@ class ElectionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> registerVoter(String voterAddress,
+  Future<bool> registerVoter(String email,
       {required BuildContext context,
       required String lga,
       required String name, required String privateKey}) async {
     isError = true;
     bool isRegistered = false;
     notifyListeners();
+
+
     try {
       debugPrint("In Register Voter Method::::");
       // Prepare the transaction
@@ -200,7 +205,7 @@ class ElectionProvider extends ChangeNotifier {
         contract: _contract,
         function: _contract.function('registerVoter'),
         parameters: [
-          EthereumAddress.fromHex(voterAddress),
+          EthereumAddress.fromHex(availableWallets[reservedVoters.isEmpty ? 0 : reservedVoters.length].walletAddress),
           lga,
           name
         ], // Pass the voter's address
@@ -217,6 +222,8 @@ class ElectionProvider extends ChangeNotifier {
       isRegistered = true;
       isError = false;
       resMessage = "Voter Registered";
+      // Send email to the registered user
+      sendWalletEmail(toEmail: email, address: availableWallets[reservedVoters.isEmpty ? 1 : reservedVoters.length].walletAddress, privateKey: availableWallets[reservedVoters.isEmpty ? 1 : reservedVoters.length].privateKey, name: name);
       notifyListeners();
       popLoader(context: context);
 
@@ -618,6 +625,66 @@ class ElectionProvider extends ChangeNotifier {
 
     return adminAddress[0] as EthereumAddress;
   }
+
+
+  List<WalletAccount> availableWallets = [];
+
+  void generateGanacheAccounts() async{
+    final mnemonic = "video stage chase fury piano hope boss loyal guide surround mixture uncover";
+    final seed = bip39.mnemonicToSeed(mnemonic);
+
+    for (int i = 0; i < 10; i++) {
+      final privateKey = getPrivateKeyFromSeed(seed, i);
+      final credentials = EthPrivateKey.fromHex(privateKey);
+      final address = await credentials.extractAddress();
+
+      final account = WalletAccount(privateKey: privateKey, walletAddress: address.hex);
+      availableWallets.add(account);
+
+
+    }
+
+    debugPrint("The total Accounts available are::::::::::::${availableWallets.length}");
+  }
+
+
+  String getPrivateKeyFromSeed(Uint8List seed, int index) {
+    final root = bip32.BIP32.fromSeed(seed);
+    final child = root.derivePath("m/44'/60'/0'/0/$index");
+    return child.privateKey!
+        .map((b) => b.toRadixString(16).padLeft(2, '0'))
+        .join();
+  }
+
+  void sendWalletEmail({required String toEmail, required String address, required String privateKey, required String name}) async {
+    final serviceId = 'service_rkpf9sg';
+    final templateId = 'template_xnjmui9';
+    final userId = '1MZTH9XjtfMx3CDoS';
+
+    debugPrint("The Wallet Address to be sent is:::::: $address The Private Key is:::::::$privateKey");
+    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+    final response = await http.post(
+      url,
+      headers: {
+        'origin': 'http://localhost', // required
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'service_id': serviceId,
+        'template_id': templateId,
+        'user_id': userId,
+        'template_params': {
+          'email': toEmail,
+          'address': address,
+          'name': name,
+          'private_key': privateKey,
+        },
+      }),
+    );
+
+    print(response.statusCode);
+    print(response.body);
+  }
 }
 
 final listOfQualifications = [
@@ -627,6 +694,17 @@ final listOfQualifications = [
   "Masters",
   "PhD",
 ];
+
+
+class WalletAccount{
+  final String walletAddress;
+  final String privateKey;
+
+  WalletAccount({
+    required this.privateKey,
+    required this.walletAddress
+});
+}
 
 final listOfParties = [apc, pdp, lp, apga, nnpp, ypp, sdp, adc];
 

@@ -128,18 +128,16 @@ class _AddCandidateDialogState extends State<AddCandidateDialog>
               color: whiteTextColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 20.h,
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: horizontalPadding.w),
-                  child: Row(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 20.h,
+                  ),
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       InkWell(
@@ -149,106 +147,106 @@ class _AddCandidateDialogState extends State<AddCandidateDialog>
                           child: SvgPicture.asset(closeDialogIcon)),
                     ],
                   ),
-                ),
-                SizedBox(
-                  height: 10.h,
-                ),
-                const Center(
-                  child: BodyTextPrimaryWithLineHeight(
-                    text: "Candidate Registration",
-                    fontWeight: boldFont,
-                    fontSize: 25,
-                    textColor: primaryTextColor,
+                  SizedBox(
+                    height: 10.h,
                   ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const LabelWidget(label: "Candidate Name"),
-                Row(
-                  children: [
-                    Expanded(
-                        child: CustomField(
-                      "Candidate name. e.g Dangdat Delmut",
-                      candidateNameController,
-                      isCapitalizeSentence: true,
-                    ))
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const SelectLGAWidget(),
-                const SizedBox(
-                  height: 10,
-                ),
-                const SelectPartyWidget(),
-                const SizedBox(
-                  height: 10,
-                ),
-                const SelectQualificationWidget(),
-                const SizedBox(
-                  height: 10,
-                ),
-                const LabelWidget(label: "Candidate Date of Birth"),
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        _restorableDatePickerRouteFuture.present();
-                      },
-                      child: BodyTextPrimaryWithLineHeight(
-                        text: selectedDobString.isEmpty
-                            ? "Select Candidate's DOB"
-                            : selectedDobString,
-                        fontWeight: semiBoldFont,
-                        textColor: primaryTextColor,
-                      ),
+                  const Center(
+                    child: BodyTextPrimaryWithLineHeight(
+                      text: "Candidate Registration",
+                      fontWeight: boldFont,
+                      fontSize: 25,
+                      textColor: primaryTextColor,
                     ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(height: 40.h),
-                MainButton("Register Candidate", () async {
-
-                  if (candidateNameController.text.isEmpty) {
-                    customSnackBar(context, "Enter a valid Candidate name");
-                  } else if (electionProvider.selectedLGA == null) {
-                    customSnackBar(context, "Select Candidate LGA");
-                  } else if (electionProvider.selectedParty == null) {
-                    customSnackBar(context, "Select Candidate Party");
-                  } else if (electionProvider.selectedQualification == null) {
-                    customSnackBar(
-                        context, "Select Candidate Highest Qualification");
-                  } else if (selectedDobString.isEmpty) {
-                    customSnackBar(context, "Select Candidate Date of birth");
-                  } else {
-                    final privateKey = await  showPrivateKeyDialog(context);
-                    if(privateKey.isNotEmpty){
-                      final isRegistered = await electionProvider.addCandidate(
-                          name: candidateNameController.text,
-                          dob: _selectedDate.value.toString(),
-                          privateKey: privateKey,
-                          context: context);
-                      if (isRegistered) {
-                        setState(() {
-                          candidateNameController.text = "";
-                          selectedDobString = "";
-                          electionProvider.resetFilters();
-                        });
-                        electionProvider.getAllCandidates();
-                        // Navigator.pop(context);
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const LabelWidget(label: "Candidate Name"),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: CustomField(
+                        "Candidate name. e.g Dangdat Delmut",
+                        candidateNameController,
+                        isCapitalizeSentence: true,
+                      ))
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const SelectLGAWidget(),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const SelectPartyWidget(),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const SelectQualificationWidget(),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const LabelWidget(label: "Candidate Date of Birth"),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          _restorableDatePickerRouteFuture.present();
+                        },
+                        child: BodyTextPrimaryWithLineHeight(
+                          text: selectedDobString.isEmpty
+                              ? "Select Candidate's DOB"
+                              : selectedDobString,
+                          fontWeight: semiBoldFont,
+                          textColor: primaryTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(height: 40.h),
+                  MainButton("Register Candidate", () async {
+              
+                    if (candidateNameController.text.isEmpty) {
+                      customSnackBar(context, "Enter a valid Candidate name");
+                    } else if (electionProvider.selectedLGA == null) {
+                      customSnackBar(context, "Select Candidate LGA");
+                    } else if (electionProvider.selectedParty == null) {
+                      customSnackBar(context, "Select Candidate Party");
+                    } else if (electionProvider.selectedQualification == null) {
+                      customSnackBar(
+                          context, "Select Candidate Highest Qualification");
+                    } else if (selectedDobString.isEmpty) {
+                      customSnackBar(context, "Select Candidate Date of birth");
+                    } else {
+                      final privateKey = await  showPrivateKeyDialog(context);
+                      if(privateKey.isNotEmpty){
+                        final isRegistered = await electionProvider.addCandidate(
+                            name: candidateNameController.text,
+                            dob: _selectedDate.value.toString(),
+                            privateKey: privateKey,
+                            context: context);
+                        if (isRegistered) {
+                          setState(() {
+                            candidateNameController.text = "";
+                            selectedDobString = "";
+                            electionProvider.resetFilters();
+                          });
+                          electionProvider.getAllCandidates();
+                          // Navigator.pop(context);
+                        }
                       }
+              
                     }
-
-                  }
-                }),
-                SizedBox(
-                  height: 10.h,
-                ),
-              ],
+                  }),
+                  SizedBox(
+                    height: 10.h,
+                  ),
+                ],
+              ),
             ),
           );
         }));

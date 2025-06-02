@@ -9,12 +9,14 @@ import 'package:gombe_election/resources/constants/dimension_constants.dart';
 import 'package:gombe_election/screens/bottom_nav_screens/add_deposit_flow/widgets/dialogs/add_voter_dialog.dart';
 import 'package:gombe_election/screens/bottom_nav_screens/widgets/white_app_bar.dart';
 import 'package:gombe_election/widgets/empty_state_widget.dart';
+
 import 'package:provider/provider.dart';
 import '../../../Widgets/components.dart';
 import '../../../Widgets/custom_text.dart';
 import '../../../resources/constants/color_constants.dart';
 import '../../../resources/constants/font_constants.dart';
 import '../../../resources/constants/image_constant.dart';
+
 
 class VotersScreen extends StatefulWidget {
   const VotersScreen({super.key});
@@ -29,8 +31,14 @@ class _VotersScreenState extends State<VotersScreen> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
+
     super.initState();
   }
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {

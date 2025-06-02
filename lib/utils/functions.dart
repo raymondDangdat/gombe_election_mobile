@@ -1,13 +1,7 @@
 import 'dart:io';
-
-import 'package:flutter/services.dart';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jiffy/jiffy.dart';
-import '../resources/constants/color_constants.dart';
-import '../resources/constants/constants.dart';
 import '../resources/constants/string_constants.dart';
 import '../widgets/loading_indicator.dart';
 
@@ -186,4 +180,10 @@ String returnFilterValue(String value) {
                   : value == thisYear
                       ? 'thisYear'
                       : '';
+}
+
+
+bool isValidEmail(String email) {
+  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  return emailRegex.hasMatch(email);
 }

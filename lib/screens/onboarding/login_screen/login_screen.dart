@@ -33,11 +33,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     walletAddressController.text =
-        kDebugMode ? "" : "";
+        kDebugMode ? "0x28ce9243c3c438C48C28a4f9Bc7916F1247e7145" : "";
 
     // walletAddressController.text =
     // kDebugMode ? "0xf9A9c5802E38c177415d17a68176201bE38B3F1B" : "";
-
     super.initState();
   }
 
@@ -94,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Expanded(
                               child: CustomField(
-                                "Enter your email e.g 0x5CF1ac",
+                                "Enter your wallet address e.g 0x5CF1ac",
                                 walletAddressController,
                                 isCapitalizeSentence: false,
                                 onChange: (value) {

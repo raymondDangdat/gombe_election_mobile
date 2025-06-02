@@ -11,6 +11,7 @@ import '../../../../../providers/election_provider.dart';
 import '../../../../../resources/constants/color_constants.dart';
 import '../../../../../resources/constants/dimension_constants.dart';
 import '../../../../../resources/constants/image_constant.dart';
+import '../../../../../utils/functions.dart';
 import '../../../../../widgets/custom_snack_back.dart';
 import '../../../../../widgets/private_key_dialog.dart';
 import '../../../buy_fuel_flow/widgets/select_lga_widget.dart';
@@ -92,7 +93,7 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
   }
 
   final voterNameController = TextEditingController();
-  final voterWalletAddressController = TextEditingController();
+  final voterEmailAddressController = TextEditingController();
 
   @override
   void initState() {
@@ -124,17 +125,16 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
               color: whiteTextColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 20.h,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 20.h,
+                  ),
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
@@ -147,102 +147,94 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
                       ),
                     ],
                   ),
-                ),
-                SizedBox(
-                  height: 10.h,
-                ),
-                const Center(
-                  child: BodyTextPrimaryWithLineHeight(
-                    text: "Voter Registration",
-                    fontWeight: boldFont,
-                    fontSize: 25,
-                    textColor: primaryTextColor,
+                  SizedBox(
+                    height: 10.h,
                   ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const LabelWidget(label: "Voter Name"),
-                Row(
-                  children: [
-                    Expanded(
-                        child: CustomField(
-                      "Voter name. e.g Dangdat Delmut",
-                      voterNameController,
-                      isCapitalizeSentence: true,
-                    ))
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const SelectLGAWidget(),
-                const SizedBox(
-                  height: 10,
-                ),
-                const LabelWidget(label: "Voter Date of Birth"),
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        _restorableDatePickerRouteFuture.present();
-                      },
-                      child: BodyTextPrimaryWithLineHeight(
-                        text: selectedDobString.isEmpty
-                            ? "Select Voter's DOB"
-                            : selectedDobString,
-                        fontWeight: semiBoldFont,
-                        textColor: primaryTextColor,
-                      ),
+                  const Center(
+                    child: BodyTextPrimaryWithLineHeight(
+                      text: "Voter Registration",
+                      fontWeight: boldFont,
+                      fontSize: 25,
+                      textColor: primaryTextColor,
                     ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const LabelWidget(label: "Wallet Address"),
-                Row(
-                  children: [
-                    Expanded(
-                        child: CustomField(
-                            "Wallet Address", voterWalletAddressController))
-                  ],
-                ),
-                SizedBox(height: 40.h),
-                MainButton("Register", () async {
-                  if (voterNameController.text.isEmpty) {
-                    customSnackBar(context, "Enter a valid voter name");
-                  } else if (electionProvider.selectedLGA == null) {
-                    customSnackBar(context, "Select voter LGA");
-                  } else if (selectedDobString.isEmpty) {
-                    customSnackBar(context, "Select Voter Date of birth");
-                  } else if (voterWalletAddressController.text.length < 32) {
-                    customSnackBar(context, "Enter valid Voter Address");
-                  } else {
-                    final privateKey = await  showPrivateKeyDialog(context);
-                    if(privateKey.length >= 32){
-                      final isRegistered = await electionProvider.registerVoter(
-                          voterWalletAddressController.text,
-                          context: context,
-                          privateKey: privateKey,
-                          name: voterNameController.text,
-                          lga: electionProvider.selectedLGA?.id ?? "");
-                      if (isRegistered) {
-                        electionProvider.getAllVoters(context: context);
-                        // Navigator.pop(context);
-                        voterNameController.text = "";
-                        voterWalletAddressController.text = "";
-                        selectedDobString = "";
-                        setState(() {});
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const LabelWidget(label: "Voter Full Name"),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: CustomField(
+                        "Voter name. e.g Dangdat Delmut",
+                        voterNameController,
+                        isCapitalizeSentence: true,
+                      ))
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const SelectLGAWidget(),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const LabelWidget(label: "Voter Date of Birth"),
+                  CustomDropdownButton(title: selectedDobString.isEmpty
+                      ? "Select Voter's DOB"
+                      : selectedDobString, onTap: (){
+                    _restorableDatePickerRouteFuture.present();
+                  }, fontWeight: selectedDobString.isEmpty ? regularFont : semiBoldFont,
+                  textColor: selectedDobString.isEmpty ? greyTextColor : blackTextColor,),
+              
+                  const SizedBox(
+                    height: 10,
+                  ),
+              
+                  const LabelWidget(label: "Email Address"),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: CustomField(
+                              "Email Address", voterEmailAddressController))
+                    ],
+                  ),
+                  SizedBox(height: 40.h),
+                  MainButton("Register", () async {
+                    if (voterNameController.text.isEmpty) {
+                      customSnackBar(context, "Enter a valid voter name");
+                    } else if (electionProvider.selectedLGA == null) {
+                      customSnackBar(context, "Select voter LGA");
+                    } else if (selectedDobString.isEmpty) {
+                      customSnackBar(context, "Select Voter Date of birth");
+                    } else if (!isValidEmail(voterEmailAddressController.text)) {
+                      customSnackBar(context, "Enter valid email Address");
+                    } else {
+                      final privateKey = await  showPrivateKeyDialog(context);
+                      if(privateKey.length >= 32){
+                        final isRegistered = await electionProvider.registerVoter(
+                            voterEmailAddressController.text,
+                            context: context,
+                            privateKey: privateKey,
+                            name: voterNameController.text,
+                            lga: electionProvider.selectedLGA?.id ?? "");
+                        if (isRegistered) {
+                          electionProvider.getAllVoters(context: context);
+                          // Navigator.pop(context);
+                          voterNameController.text = "";
+                          voterEmailAddressController.text = "";
+                          selectedDobString = "";
+                          setState(() {});
+                        }
                       }
+              
                     }
-
-                  }
-                }),
-                SizedBox(
-                  height: 10.h,
-                ),
-              ],
+                  }),
+                  SizedBox(
+                    height: 10.h,
+                  ),
+                ],
+              ),
             ),
           );
         }));

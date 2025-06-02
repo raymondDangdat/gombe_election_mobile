@@ -31,6 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final electionProvider =
       Provider.of<ElectionProvider>(context, listen: false);
       electionProvider.startFetchCurrentElectionPhase(context: context);
+      if(electionProvider.availableWallets.isEmpty){
+        electionProvider.generateGanacheAccounts();
+      }
     });
     super.initState();
   }

@@ -54,6 +54,11 @@ dependencies:
   shared_preferences: ^2.2.3
   pin_code_fields: ^8.0.1
   dropdown_button2: ^2.3.9
+  bip39: ^1.0.4
+  bip32: ^2.0.0
+  hex: ^0.2.0
+  pointycastle: ^3.7.3
+
 
 dev_dependencies:
   flutter_test:
