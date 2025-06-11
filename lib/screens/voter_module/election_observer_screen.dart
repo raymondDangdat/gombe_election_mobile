@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,6 +23,20 @@ class ElectionObserverScreen extends StatefulWidget {
 }
 
 class _ElectionObserverScreenState extends State<ElectionObserverScreen> {
+  // @override
+  // void initState() {
+  //   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+
+  //   });
+  //   setState(() {});
+  //   super.initState();
+  // }
+
+
+
+  Timer? _timer;
+
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -29,9 +45,23 @@ class _ElectionObserverScreenState extends State<ElectionObserverScreen> {
       electionProvider.resetFilters();
       electionProvider.getAllCandidates();
       electionProvider.getAllVoters(context: context);
+
+      _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+        electionProvider.getAllCandidates(showLoading: false);
+        electionProvider.getAllVoters(context: context, showLoading: false);
+      });
+
     });
-    setState(() {});
     super.initState();
+  }
+
+
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -141,13 +171,13 @@ class _ElectionObserverScreenState extends State<ElectionObserverScreen> {
                                   const BodyTextPrimaryWithLineHeight(
                                     text: "Total Registered Voters",
                                     textColor: primaryTextColor,
-                                    fontSize: 18,
+                                    fontSize: 16,
                                   ),
                                   BodyTextPrimaryWithLineHeight(
                                     text:
                                     "${lgRegisteredVoters.length}",
                                     textColor: primaryTextColor,
-                                    fontSize: 32,
+                                    fontSize: 20,
                                   ),
                                   SizedBox(
                                     height: 5.h,
@@ -155,12 +185,12 @@ class _ElectionObserverScreenState extends State<ElectionObserverScreen> {
                                   const BodyTextPrimaryWithLineHeight(
                                     text: "Total Vote Cast",
                                     textColor: primaryTextColor,
-                                    fontSize: 18,
+                                    fontSize: 16,
                                   ),
                                   BodyTextPrimaryWithLineHeight(
                                     text: "${lgTotalVoters.length}",
                                     textColor: primaryTextColor,
-                                    fontSize: 32,
+                                    fontSize: 20,
                                   ),
                                 ],
                               ),

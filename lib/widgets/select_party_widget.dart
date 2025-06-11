@@ -2,8 +2,8 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:gombe_election/models/local_government_model.dart';
 import 'package:gombe_election/providers/election_provider.dart';
+import 'package:gombe_election/widgets/custom_snack_back.dart';
 import 'package:provider/provider.dart';
 import '../../../../Widgets/custom_text.dart';
 import '../../../../resources/constants/color_constants.dart';
@@ -56,14 +56,14 @@ class _SelectPartyWidgetState extends State<SelectPartyWidget> {
                   ],
                 ),
                 items: listOfParties
-                    .map((String item) => DropdownMenuItem<String>(
+                    .map((String item) =>  DropdownMenuItem<String>(
                         value: item,
-                        child: Row(
+                        child:  Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             BodyTextPrimaryWithLineHeight(
                               text: item,
-                              textColor: primaryTextColor,
+                              textColor: electionProvider.addedParties.contains(item) ? hintTextColor  : primaryTextColor,
                               fontWeight: mediumFont,
                             ),
                           ],
@@ -71,7 +71,12 @@ class _SelectPartyWidgetState extends State<SelectPartyWidget> {
                     .toList(),
                 value: electionProvider.selectedParty,
                 onChanged: (String? value) async {
-                  electionProvider.updateSelectedParty(value);
+                  if(electionProvider.addedParties.contains(value)){
+                    customSnackBar(context, 'Candidate already added for this Party');
+                  }else{
+                    electionProvider.updateSelectedParty(value);
+                  }
+
                 },
                 buttonStyleData: ButtonStyleData(
                   height: 52,

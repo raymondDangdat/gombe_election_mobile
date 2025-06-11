@@ -77,6 +77,7 @@ class ElectionProvider extends ChangeNotifier {
           (Timer timer) async{
         if (_start == 0) {
           getCurrentElectionStage(context: context);
+          // getAllCandidates(showLoading: false, );
           _start = 10;
         } else {
 
@@ -162,8 +163,23 @@ class ElectionProvider extends ChangeNotifier {
   String? selectedQualification;
   String? selectedParty;
 
-  void updateSelectedLGA(LGA? option) {
+  List<String> addedParties = [];
+  void updateSelectedLGA(LGA? option, {bool isAddCandidate  = false}) {
     selectedLGA = option;
+    selectedParty = null;
+    if(isAddCandidate){
+    //   Check and sort parties already added for the LGA
+      addedParties = [];
+      final lgaCandidates = reservedCandidates
+          .where((candidate) => option?.id == candidate.lga)
+          .toList();
+      for(int i = 0; i < lgaCandidates.length; i++){
+        addedParties.add(lgaCandidates[i].party);
+      }
+
+      debugPrint("Added parties length:::: ${addedParties.length}");
+
+    }
     notifyListeners();
   }
 
@@ -191,7 +207,8 @@ class ElectionProvider extends ChangeNotifier {
   Future<bool> registerVoter(String email,
       {required BuildContext context,
       required String lga,
-      required String name, required String privateKey}) async {
+      required String name, required String privateKey,
+      required String voterCardNumber}) async {
     isError = true;
     bool isRegistered = false;
     notifyListeners();
@@ -207,7 +224,9 @@ class ElectionProvider extends ChangeNotifier {
         parameters: [
           EthereumAddress.fromHex(availableWallets[reservedVoters.isEmpty ? 0 : reservedVoters.length].walletAddress),
           lga,
-          name
+          name,
+          email,
+          voterCardNumber
         ], // Pass the voter's address
         from: currentUserAddress, // Replace with your admin address
       );
@@ -405,11 +424,12 @@ class ElectionProvider extends ChangeNotifier {
   }
 
   bool loadingAllCandidates = false;
-  Future<bool> getAllCandidates() async {
+  Future<bool> getAllCandidates({bool showLoading = true, bool filter = false}) async {
     bool requestFetched = false;
-    loadingAllCandidates = true;
-    candidatesListToDisplay = [];
-    reservedCandidates = [];
+    if(showLoading){
+      loadingAllCandidates = true;
+    }
+    List<CandidateModel> tempReservedCandidates = [];
     notifyListeners();
     try {
       debugPrint("In Get All Candidates Method::::");
@@ -440,7 +460,7 @@ class ElectionProvider extends ChangeNotifier {
           'qualification': candidateResult[5] as String,
         };
 
-        candidatesListToDisplay.add(CandidateModel(
+        tempReservedCandidates.add(CandidateModel(
             name: '${candidate["name"] ?? ""}',
             lga: '${candidate["lga"] ?? "NA"}',
             voteCount: candidate["voteCount"] == null
@@ -453,7 +473,16 @@ class ElectionProvider extends ChangeNotifier {
         loadingAllCandidates = false;
         notifyListeners();
       }
-      reservedCandidates.addAll(candidatesListToDisplay);
+
+      candidatesListToDisplay = [];
+      reservedCandidates = [];
+      reservedCandidates.addAll(tempReservedCandidates);
+      if(filter){
+        filterCandidates();
+      }else{
+        candidatesListToDisplay.addAll(tempReservedCandidates);
+      }
+
       notifyListeners();
       debugPrint("Candidates retrieved: ${candidatesListToDisplay.length}");
       loadingAllCandidates = false;
@@ -490,36 +519,50 @@ class ElectionProvider extends ChangeNotifier {
   List<VoterModel> reservedVoters = [];
 
   bool loadingAllVoters = false;
-  Future<List<VoterModel>> getAllVoters({required BuildContext context}) async {
-
+  Future<List<VoterModel>> getAllVoters({required BuildContext context,
+    bool filter = false, bool showLoading = false,
+  }) async {
     // Retrieve all voter addresses
-    loadingAllVoters = true;
+    if(showLoading){
+      loadingAllVoters = true;
+    }
+
+    List<VoterModel> tempReserveVoters = [];
     notifyListeners();
-    debugPrint("Get All voters called::::::::::::::::::");
+    debugPrint("Get All voters Method called::::::::::::::::::Filter voters $filter");
     final voterAddresses = await _client.call(
       contract: _contract,
       function: _contract.function('getAllVoterAddresses'),
       params: [],
     );
 
-    votersToDisplay = [];
-    reservedVoters = [];
     // Loop through each voter address and get their details
     for (var address in voterAddresses[0]) {
       final voterDetails = await getVoterDetails(
           EthereumAddress.fromHex(address.toString()),
           context: context);
       // debugPrint("Voter: ${ voterDetails}");
-      votersToDisplay.add(VoterModel(
+      tempReserveVoters.add(VoterModel(
           name: voterDetails["name"] ?? "No Name",
           lga: voterDetails["lga"] ?? "No LGA",
           voterAddress: address,
           hasVoted: voterDetails["hasVoted"] ?? false));
     }
 
+    debugPrint("Temp Voters Length:::: ${tempReserveVoters.length} Selected LGA ID ${selectedLGA?.name} ${selectedLGA?.id}");
+
+    votersToDisplay = [];
+    reservedVoters = [];
+
+    reservedVoters.addAll(tempReserveVoters);
+    if(filter){
+      filterVoters();
+    }else{
+      votersToDisplay.addAll(tempReserveVoters);
+    }
+
     debugPrint("Total Voters::::::::::::::::::: ${votersToDisplay.length}");
     loadingAllVoters = false;
-    reservedVoters.addAll(votersToDisplay);
     notifyListeners();
     return votersToDisplay;
   }
@@ -547,9 +590,9 @@ class ElectionProvider extends ChangeNotifier {
   Future<VoterModel?> voterLogin(EthereumAddress voterAddress,
       {required BuildContext context, showLoading = true}) async {
     VoterModel? loginVoter;
-    if (showLoading) {
-      showLoader(context, message: "Getting your details");
-    }
+    // if (showLoading) {
+    //   showLoader(context, message: "Getting your details");
+    // }
     isError = true;
     voter = null;
     currentUserAddress = null;
@@ -575,9 +618,9 @@ class ElectionProvider extends ChangeNotifier {
         updateVoter(loginVoter);
         notifyListeners();
       }
-      if (showLoading) {
-        popLoader(context: context);
-      }
+      // if (showLoading) {
+      //   popLoader(context: context);
+      // }
       return loginVoter;
     } catch (error) {
       if (showLoading) {
@@ -616,13 +659,23 @@ class ElectionProvider extends ChangeNotifier {
     }
   }
 
-  Future<EthereumAddress> getElectionAdmin() async {
+  bool loggingIn = false;
+  Future<EthereumAddress> getElectionAdmin({bool showLoading = false, required BuildContext context}) async {
+    // if(showLoading){
+    //   if (showLoading) {
+    //     showLoader(context, message: "Getting your details");
+    //   }
+    // }
     final adminAddress = await _client.call(
       contract: _contract,
       function: _contract.function('electionAdmin'),
       params: [],
     );
 
+    // if (showLoading) {
+    //   popLoader(context: context);
+    // }
+    notifyListeners();
     return adminAddress[0] as EthereumAddress;
   }
 
@@ -630,7 +683,7 @@ class ElectionProvider extends ChangeNotifier {
   List<WalletAccount> availableWallets = [];
 
   void generateGanacheAccounts() async{
-    final mnemonic = "video stage chase fury piano hope boss loyal guide surround mixture uncover";
+    final mnemonic = "motion fee drift isolate country pave witness elephant pupil fame raccoon tide";
     final seed = bip39.mnemonicToSeed(mnemonic);
 
     for (int i = 0; i < 10; i++) {

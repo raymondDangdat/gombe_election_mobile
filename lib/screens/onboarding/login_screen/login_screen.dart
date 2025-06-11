@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     walletAddressController.text =
-        kDebugMode ? "0x28ce9243c3c438C48C28a4f9Bc7916F1247e7145" : "";
+        kDebugMode ? "0xbE6663B6f33BeAD486e0c341037200Ea2Ed52466" : "";
 
     // walletAddressController.text =
     // kDebugMode ? "0xf9A9c5802E38c177415d17a68176201bE38B3F1B" : "";
@@ -126,8 +126,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
                                   } else {
                                     try {
+
+
                                       final address = await electionProvider
-                                          .getElectionAdmin();
+                                          .getElectionAdmin(context: context, showLoading: false);
                                       if (address ==
                                           EthereumAddress.fromHex(
                                               walletAddressController.text)) {
@@ -142,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 EthereumAddress.fromHex(
                                                     walletAddressController
                                                         .text),
-                                                context: context);
+                                                context: context, showLoading: false);
                                         if (voter != null) {
                                           electionProvider.updateVoter(voter);
                                           navToWithScreenName(

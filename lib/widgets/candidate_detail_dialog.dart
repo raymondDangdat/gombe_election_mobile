@@ -119,7 +119,7 @@ class _DeleteAccountInfoDialogState extends State<DeleteAccountInfoDialog> {
                               "Qualification: ${electionProProvider.selectedCandidate?.qualification}",
                           textColor: primaryTextColor,
                           fontWeight: semiBoldFont,
-                          fontSize: 20,
+                          fontSize: 16,
                         ),
                       ],
                     ),
@@ -134,13 +134,13 @@ class _DeleteAccountInfoDialogState extends State<DeleteAccountInfoDialog> {
                                 "LGA: ${electionProProvider.selectedCandidate?.lga == "NA" ? "NA" : returnLGA(lgID: int.parse(electionProProvider.selectedCandidate!.lga))}",
                             textColor: primaryTextColor,
                             fontWeight: semiBoldFont,
-                            fontSize: 20),
+                            fontSize: 16),
                         BodyTextPrimaryWithLineHeight(
                             text:
                                 "Party: ${electionProProvider.selectedCandidate?.party}",
                             textColor: primaryTextColor,
                             fontWeight: semiBoldFont,
-                            fontSize: 20),
+                            fontSize: 16),
                       ],
                     ),
                     const SizedBox(
@@ -154,13 +154,13 @@ class _DeleteAccountInfoDialogState extends State<DeleteAccountInfoDialog> {
                                 "Date of Birth: ${returnFormattedDate(electionProProvider.selectedCandidate!.dob)}",
                             textColor: primaryTextColor,
                             fontWeight: semiBoldFont,
-                            fontSize: 20),
+                            fontSize: 14),
                         BodyTextPrimaryWithLineHeight(
                             text:
                                 "Age: ${calculateAge(DateTime.parse(electionProProvider.selectedCandidate!.dob))}",
                             textColor: primaryTextColor,
                             fontWeight: semiBoldFont,
-                            fontSize: 20),
+                            fontSize: 16),
                       ],
                     ),
                     SizedBox(

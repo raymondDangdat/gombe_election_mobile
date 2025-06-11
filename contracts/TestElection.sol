@@ -32,25 +32,34 @@ contract TestElection {
         bool isRegistered;
         string name;
         string localGovernment;
+        string email;
+        string voterID;
     }
 
     mapping(uint => Candidate) public candidates;
     mapping(address => Voter) public registeredVoters;
-    address[] public voterAddresses; // New array to store voter addresses
+    address[] public voterAddresses;
     uint public candidatesCount;
 
+    mapping(string => bool) private usedEmails;
+    mapping(string => bool) private usedVoterIDs;
+
     modifier onlyAdmin() {
-        require(msg.sender == electionAdmin);
+        require(msg.sender == electionAdmin, "Only admin can perform this action");
         _;
     }
 
     modifier validState(PHASE x) {
-        require(currentElectionStage == x);
+        require(currentElectionStage == x, "Invalid phase for this action");
         _;
     }
 
+    event VoterRegistered(address voter, string name);
+    event CandidateAdded(uint candidateId, string name);
+    event VoteCast(address voter, uint candidateId);
+
     function changeState(PHASE x) public onlyAdmin {
-        require(x > currentElectionStage);
+        require(x > currentElectionStage, "Can only move to a later phase");
         currentElectionStage = x;
     }
 
@@ -71,30 +80,47 @@ contract TestElection {
             _qualification,
             _localGovernment
         );
+        emit CandidateAdded(candidatesCount, _name);
     }
 
     function registerVoter(
         address voter,
         string memory _localGovernment,
-        string memory _name
+        string memory _name,
+        string memory _email,
+        string memory _voterID
     ) public onlyAdmin validState(PHASE.reg) {
+        require(!registeredVoters[voter].isRegistered, "Voter already registered");
+        require(!usedEmails[_email], "Email already used");
+        require(!usedVoterIDs[_voterID], "Voter ID already used");
+
         registeredVoters[voter] = Voter({
             hasVoted: false,
             vote: 0,
             isRegistered: true,
             name: _name,
-            localGovernment: _localGovernment
+            localGovernment: _localGovernment,
+            email: _email,
+            voterID: _voterID
         });
-        voterAddresses.push(voter); // Store the voter's address
+
+        voterAddresses.push(voter);
+        usedEmails[_email] = true;
+        usedVoterIDs[_voterID] = true;
+
+        emit VoterRegistered(voter, _name);
     }
 
     function castVote(uint _candidateId) public validState(PHASE.voting) {
-        require(registeredVoters[msg.sender].isRegistered);
-        require(!registeredVoters[msg.sender].hasVoted);
-        require(_candidateId > 0 && _candidateId <= candidatesCount);
+        require(registeredVoters[msg.sender].isRegistered, "Not registered");
+        require(!registeredVoters[msg.sender].hasVoted, "Already voted");
+        require(_candidateId > 0 && _candidateId <= candidatesCount, "Invalid candidate");
+
         candidates[_candidateId].voteCount++;
         registeredVoters[msg.sender].hasVoted = true;
         registeredVoters[msg.sender].vote = _candidateId;
+
+        emit VoteCast(msg.sender, _candidateId);
     }
 
     function getWinner()
@@ -123,12 +149,10 @@ contract TestElection {
         return (winner.name, winner.voteCount, winner.party);
     }
 
-    // New function to get all voter addresses
     function getAllVoterAddresses() public view returns (address[] memory) {
         return voterAddresses;
     }
 
-    // New function to get voter details
     function getVoterDetails(
         address voter
     )
@@ -139,10 +163,20 @@ contract TestElection {
             uint vote,
             bool isRegistered,
             string memory name,
-            string memory localGovernment
+            string memory localGovernment,
+            string memory email,
+            string memory voterID
         )
     {
         Voter memory v = registeredVoters[voter];
-        return (v.hasVoted, v.vote, v.isRegistered, v.name, v.localGovernment);
+        return (
+            v.hasVoted,
+            v.vote,
+            v.isRegistered,
+            v.name,
+            v.localGovernment,
+            v.email,
+            v.voterID
+        );
     }
 }

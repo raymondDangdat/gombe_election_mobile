@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,6 @@ import 'package:gombe_election/resources/constants/dimension_constants.dart';
 import 'package:gombe_election/screens/bottom_nav_screens/add_deposit_flow/widgets/dialogs/add_voter_dialog.dart';
 import 'package:gombe_election/screens/bottom_nav_screens/widgets/white_app_bar.dart';
 import 'package:gombe_election/widgets/empty_state_widget.dart';
-
 import 'package:provider/provider.dart';
 import '../../../Widgets/components.dart';
 import '../../../Widgets/custom_text.dart';
@@ -26,13 +26,29 @@ class VotersScreen extends StatefulWidget {
 }
 
 class _VotersScreenState extends State<VotersScreen> {
-  LGA? selectedLGA;
+  Timer? _timer;
+
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final electionProvider =
+      Provider.of<ElectionProvider>(context, listen: false);
+      _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+        electionProvider.getAllVoters(context: context, filter: electionProvider.selectedLGA != null, );
+      });
 
+    });
     super.initState();
+  }
+
+
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    _timer?.cancel();
+    super.dispose();
   }
 
 

@@ -35,6 +35,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
       if (index == 2) {
         electionProvider.getAllVoters(context: context);
       } else if (index == 3) {
+        debugPrint("Navigation Index:::::: $index");
         electionProvider.getAllCandidates();
       }
     });

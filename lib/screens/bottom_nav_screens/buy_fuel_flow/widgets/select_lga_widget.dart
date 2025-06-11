@@ -12,7 +12,9 @@ import '../../../../resources/constants/font_constants.dart';
 import '../../../../resources/constants/image_constant.dart';
 
 class SelectLGAWidget extends StatefulWidget {
-  const SelectLGAWidget({super.key});
+  final bool isAddCandidate;
+  const SelectLGAWidget({super.key,
+  this.isAddCandidate = false});
 
   @override
   State<SelectLGAWidget> createState() => _SelectLGAWidgetState();
@@ -72,7 +74,7 @@ class _SelectLGAWidgetState extends State<SelectLGAWidget> {
                     .toList(),
                 value: electionProvider.selectedLGA,
                 onChanged: (LGA? value) async {
-                  electionProvider.updateSelectedLGA(value);
+                  electionProvider.updateSelectedLGA(value, isAddCandidate: widget.isAddCandidate);
                 },
                 buttonStyleData: ButtonStyleData(
                   height: 52,

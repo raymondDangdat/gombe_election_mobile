@@ -175,10 +175,11 @@ class _AddCandidateDialogState extends State<AddCandidateDialog>
                   const SizedBox(
                     height: 10,
                   ),
-                  const SelectLGAWidget(),
+                  const SelectLGAWidget(isAddCandidate: true,),
                   const SizedBox(
                     height: 10,
                   ),
+                  if(electionProvider.selectedLGA != null)
                   const SelectPartyWidget(),
                   const SizedBox(
                     height: 10,

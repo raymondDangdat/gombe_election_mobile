@@ -94,6 +94,7 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
 
   final voterNameController = TextEditingController();
   final voterEmailAddressController = TextEditingController();
+  final voterCardNumberController = TextEditingController();
 
   @override
   void initState() {
@@ -196,7 +197,20 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
                     children: [
                       Expanded(
                           child: CustomField(
+                            type: TextInputType.emailAddress,
                               "Email Address", voterEmailAddressController))
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+
+                  const LabelWidget(label: "Voter Card Number"),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: CustomField(
+                              "Voter Card Number", voterCardNumberController))
                     ],
                   ),
                   SizedBox(height: 40.h),
@@ -209,6 +223,8 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
                       customSnackBar(context, "Select Voter Date of birth");
                     } else if (!isValidEmail(voterEmailAddressController.text)) {
                       customSnackBar(context, "Enter valid email Address");
+                    } else if (voterEmailAddressController.text.length < 10) {
+                      customSnackBar(context, "Enter valid voter card number");
                     } else {
                       final privateKey = await  showPrivateKeyDialog(context);
                       if(privateKey.length >= 32){
@@ -217,6 +233,7 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
                             context: context,
                             privateKey: privateKey,
                             name: voterNameController.text,
+                            voterCardNumber: voterCardNumberController.text,
                             lga: electionProvider.selectedLGA?.id ?? "");
                         if (isRegistered) {
                           electionProvider.getAllVoters(context: context);
@@ -224,6 +241,7 @@ class _AddVoterDialogState extends State<AddVoterDialog> with RestorationMixin {
                           voterNameController.text = "";
                           voterEmailAddressController.text = "";
                           selectedDobString = "";
+                          voterCardNumberController.text = "";
                           setState(() {});
                         }
                       }

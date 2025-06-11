@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +19,41 @@ import '../../../resources/constants/image_constant.dart';
 import '../../../widgets/add_candidate_dialog.dart';
 import '../../../widgets/white_app_bar.dart';
 
-class CandidatesScreen extends StatelessWidget {
+class CandidatesScreen extends StatefulWidget {
   const CandidatesScreen({super.key});
+
+  @override
+  State<CandidatesScreen> createState() => _CandidatesScreenState();
+}
+
+class _CandidatesScreenState extends State<CandidatesScreen> {
+  Timer? _timer;
+
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final electionProvider =
+      Provider.of<ElectionProvider>(context, listen: false);
+
+      _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+        electionProvider.getAllCandidates(
+          showLoading: false, filter: electionProvider.selectedLGA != null
+        );
+      });
+
+    });
+    super.initState();
+  }
+
+
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +184,7 @@ class CandidatesScreen extends StatelessWidget {
                             itemCount:
                                 electionProvider.candidatesListToDisplay.length,
                             itemBuilder: (context, index) {
-                              final voter = electionProvider
+                              final candidate = electionProvider
                                   .candidatesListToDisplay[index];
                               return Padding(
                                 padding: EdgeInsets.only(
@@ -164,7 +199,7 @@ class CandidatesScreen extends StatelessWidget {
                                       Row(
                                         children: [
                                           BodyTextPrimaryWithLineHeight(
-                                            text: voter.name,
+                                            text: candidate.name,
                                             textColor: primaryTextColor,
                                             fontWeight: boldFont,
                                             fontSize: 20,
@@ -177,7 +212,7 @@ class CandidatesScreen extends StatelessWidget {
                                         children: [
                                           BodyTextPrimaryWithLineHeight(
                                             text:
-                                                "Qualification: ${voter.qualification}",
+                                                "Qualification: ${candidate.qualification}",
                                             textColor: primaryTextColor,
                                             fontWeight: semiBoldFont,
                                           ),
@@ -192,12 +227,12 @@ class CandidatesScreen extends StatelessWidget {
                                         children: [
                                           BodyTextPrimaryWithLineHeight(
                                             text:
-                                                "LGA: ${voter.lga == "NA" ? "NA" : returnLGA(lgID: int.parse(voter.lga))}",
+                                                "LGA: ${candidate.lga == "NA" ? "NA" : returnLGA(lgID: int.parse(candidate.lga))}",
                                             textColor: primaryTextColor,
                                             fontWeight: semiBoldFont,
                                           ),
                                           BodyTextPrimaryWithLineHeight(
-                                            text: "Party: ${voter.party}",
+                                            text: "Party: ${candidate.party}",
                                             textColor: primaryTextColor,
                                             fontWeight: semiBoldFont,
                                           ),
@@ -212,13 +247,13 @@ class CandidatesScreen extends StatelessWidget {
                                         children: [
                                           BodyTextPrimaryWithLineHeight(
                                             text:
-                                                "Date of Birth: ${returnFormattedDate(voter.dob)}",
+                                                "Date of Birth: ${returnFormattedDate(candidate.dob)}",
                                             textColor: primaryTextColor,
                                             fontWeight: semiBoldFont,
                                           ),
                                           BodyTextPrimaryWithLineHeight(
                                             text:
-                                                "Age: ${calculateAge(DateTime.parse(voter.dob))}",
+                                                "Age: ${calculateAge(DateTime.parse(candidate.dob))}",
                                             textColor: primaryTextColor,
                                             fontWeight: semiBoldFont,
                                           ),
@@ -234,22 +269,26 @@ class CandidatesScreen extends StatelessWidget {
       })),
       floatingActionButton: SizedBox(
         width: 230,
-        child: MainButton(
-          "",
-          () {
-            showAddCandidateDialog(context);
-          },
-          border: 12,
-          widget: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              BodyTextLightWithLineHeight(
-                text: "Add Candidate",
-                textColor: white,
-                fontWeight: semiBoldFont,
-              )
-            ],
-          ),
+        child: Consumer<ElectionProvider>(builder: (ctx, electionProvider, child) {
+            return MainButton(
+              "",
+              () {
+                electionProvider.updateSelectedLGA(null);
+                showAddCandidateDialog(context);
+              },
+              border: 12,
+              widget: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  BodyTextLightWithLineHeight(
+                    text: "Add Candidate",
+                    textColor: white,
+                    fontWeight: semiBoldFont,
+                  )
+                ],
+              ),
+            );
+          }
         ),
       ),
     );

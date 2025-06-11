@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -29,16 +31,37 @@ class VoterListOfCandidatesScreen extends StatefulWidget {
 
 class _VoterListOfCandidatesScreenState
     extends State<VoterListOfCandidatesScreen> {
-  LGA? selectedLGA;
+  // LGA? selectedLGA;
+
+  Timer? _timer;
+
 
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final electionProvider =
       Provider.of<ElectionProvider>(context, listen: false);
-      electionProvider.getAllVoters(context: context);
+
+      if(electionProvider.currentPhaseInt != 0){
+        electionProvider.getAllVoters(context: context);
+      }
+
+      _timer = Timer.periodic(Duration(seconds: 2), (timer) {
+        electionProvider.filterCandidates(
+            lgId: electionProvider.voter?.lga ?? "");
+      });
+
     });
     super.initState();
+  }
+
+
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -276,8 +299,8 @@ class CandidateWidget2 extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                height: 100,
-                width: 100,
+                height: 60,
+                width: 60,
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: hintTextColor,
@@ -311,49 +334,53 @@ class CandidateWidget2 extends StatelessWidget {
                 text: candidate.party,
                 textColor: white,
                 fontWeight: semiBoldFont,
-                fontSize: 25,
+                fontSize: 20,
               ),
             ],
           ),
+
           Padding(
-            padding: EdgeInsets.only(top: 10.h),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            padding: EdgeInsets.only(top: 5),
+            child: Consumer<ElectionProvider>(builder: (ctx, electionProvider, child) {
+                return electionProvider.currentPhaseInt == 0  ? Container() : Column(
                   children: [
-                    const BodyTextPrimaryWithLineHeight(
-                      text: "Votes: ",
-                      textColor: white,
-                      fontWeight: semiBoldFont,
-                      fontSize: 20,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const BodyTextPrimaryWithLineHeight(
+                          text: "Votes: ",
+                          textColor: white,
+                          fontWeight: semiBoldFont,
+                          fontSize: 16,
+                        ),
+                        HeaderText(
+                          text: "${candidate.voteCount} ",
+                          fontSize: 20,
+                          fontWeight: boldFont,
+                          textColor: white,
+                        )
+                      ],
                     ),
-                    HeaderText(
-                      text: "${candidate.voteCount} ",
-                      fontSize: 32,
-                      fontWeight: boldFont,
-                      textColor: white,
-                    )
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const BodyTextPrimaryWithLineHeight(
-                      text: "Percent: ",
-                      textColor: white,
-                      fontWeight: semiBoldFont,
-                      fontSize: 20,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const BodyTextPrimaryWithLineHeight(
+                          text: "Percent: ",
+                          textColor: white,
+                          fontWeight: semiBoldFont,
+                          fontSize: 16,
+                        ),
+                        HeaderText(
+                          text: "${totalVoters == 0 ? 0 : ((candidate.voteCount * 100) / totalVoters).toStringAsFixed(2)} ",
+                          fontSize: 20,
+                          fontWeight: boldFont,
+                          textColor: white,
+                        )
+                      ],
                     ),
-                    HeaderText(
-                      text: "${((candidate.voteCount * 100) / totalVoters).toStringAsFixed(2)} ",
-                      fontSize: 32,
-                      fontWeight: boldFont,
-                      textColor: white,
-                    )
                   ],
-                ),
-              ],
+                );
+              }
             ),
           ),
         ],
