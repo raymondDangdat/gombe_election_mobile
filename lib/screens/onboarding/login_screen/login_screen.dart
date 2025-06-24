@@ -34,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     walletAddressController.text =
         kDebugMode ? "0xbE6663B6f33BeAD486e0c341037200Ea2Ed52466" : "";
-
     // walletAddressController.text =
     // kDebugMode ? "0xf9A9c5802E38c177415d17a68176201bE38B3F1B" : "";
     super.initState();
